@@ -16,6 +16,9 @@ struct ContentView: View {
     @State private var taskViewHeight: CGFloat = 150
     
     @State var taskData: TaskModel?
+    
+    @State var deleteConfirmation: Bool = false
+    @State var completeConfirmation: Bool = false
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -104,19 +107,41 @@ struct ContentView: View {
         .onAppear {
             taskData = TaskDataModel.shared.getTasks()
         }
-        .confirmationDialog("Change background", isPresented: $showConfirmation) {
-            Button("Delete Task", role: .destructive) {
+        .confirmationDialog("Delete Task", isPresented: $deleteConfirmation) {
+            Button("Delete", role: .destructive) {
                 TaskDataModel.shared.clearData { cleared in
                     print("Task Deleted: \(cleared)")
                     taskData = TaskDataModel.shared.getTasks()
                 }
             }
-            Button("Mark Complete") {
-                // temporary functionality, note: we're not saving completed tasks
+            Button("Cancel", role: .cancel) {
+                withAnimation {
+                    taskViewWidth = 200
+                    taskViewHeight = 150
+                }
+            }
+        } message: { Text("Are you sure you want to delete this Task?") }
+        .confirmationDialog("Mark Task as Completed", isPresented: $completeConfirmation) {
+            Button("Finish") {
                 TaskDataModel.shared.clearData { cleared in
-                    print("Task Completed: \(cleared)")
+                    print("Task Finished: \(cleared)")
                     taskData = TaskDataModel.shared.getTasks()
                 }
+            }
+            Button("Cancel", role: .cancel) {
+                withAnimation {
+                    taskViewWidth = 200
+                    taskViewHeight = 150
+                }
+            }
+        } message: { Text("Mark this Task as finished") }
+        .confirmationDialog("Change background", isPresented: $showConfirmation) {
+            Button("Delete Task", role: .destructive) {
+                deleteConfirmation.toggle()
+            }
+            Button("Finish Task") {
+                // temporary functionality, note: we're not saving completed tasks
+                completeConfirmation.toggle()
             }
             Button("Dismiss", role: .cancel) {
                 withAnimation {
